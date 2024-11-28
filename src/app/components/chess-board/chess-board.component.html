@@ -1,11 +1,11 @@
 <ngx-chess-board
   #board
+  [size]="400"
   [darkTileColor]="'#B58863'"
   [lightTileColor]="'#F0D9B5'"
-  [size]="400"
-  [dragDisabled]="false"
+  [dragDisabled]="isDisabled"
   [drawDisabled]="true"
   (moveChange)="onMoveChange($event)"
-  [orientation]="isBlackPerspective ? 'black' : 'white'"
+  [boardOrientation]="playerColor"
 >
 </ngx-chess-board>

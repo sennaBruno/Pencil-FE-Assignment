@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { Subject } from 'rxjs';
+import { BehaviorSubject } from 'rxjs';
 
 export interface ChessMove {
   from: string;
@@ -11,10 +11,15 @@ export interface ChessMove {
   providedIn: 'root',
 })
 export class ChessService {
-  private moveSubject = new Subject<ChessMove>();
-  moves$ = this.moveSubject.asObservable();
+  private currentTurnSubject = new BehaviorSubject<'white' | 'black'>('white');
+  currentTurn$ = this.currentTurnSubject.asObservable();
 
   sendMove(move: ChessMove) {
-    this.moveSubject.next(move);
+    console.log('Alterando turno:', move.color === 'white' ? 'black' : 'white');
+    this.currentTurnSubject.next(move.color === 'white' ? 'black' : 'white');
+  }
+
+  getCurrentTurn() {
+    return this.currentTurnSubject.value;
   }
 }
