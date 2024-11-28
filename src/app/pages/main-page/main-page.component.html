@@ -1,1 +1,19 @@
-<p>main-page works!</p>
+<div class="main-container">
+  <h1>Chess Game</h1>
+  <div class="iframes-container">
+    <iframe
+      #iframe1
+      src="/iframepage"
+      class="chess-iframe"
+      (load)="onIframeLoad($event, 1)"
+    >
+    </iframe>
+    <iframe
+      #iframe2
+      src="/iframepage"
+      class="chess-iframe"
+      (load)="onIframeLoad($event, 2)"
+    >
+    </iframe>
+  </div>
+</div>
