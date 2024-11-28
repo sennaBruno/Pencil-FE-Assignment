@@ -39,15 +39,15 @@ export class MainPageComponent implements OnInit, OnDestroy {
   private handleMessage = (event: MessageEvent) => {
     if (event.data?.type === 'CHESS_MOVE') {
       try {
-        console.log('Main page recebendo movimento:', event.data);
+        console.log('Main page receiving move:', event.data);
 
-        // Determina qual iframe deve receber o movimento
+        // Determine which iframe should receive the move
         const targetIframe =
           event.data.move.color === 'white'
             ? this.iframe2.nativeElement.contentWindow
             : this.iframe1.nativeElement.contentWindow;
 
-        // Envia o movimento para o iframe de destino
+        // Send the move to the target iframe
         targetIframe.postMessage(
           {
             type: 'CHESS_MOVE',
@@ -56,7 +56,7 @@ export class MainPageComponent implements OnInit, OnDestroy {
           '*'
         );
       } catch (error) {
-        console.error('Erro ao processar movimento:', error);
+        console.error('Error processing move:', error);
       }
     }
   };

@@ -27,8 +27,9 @@ export class ChessBoardComponent implements OnInit, OnDestroy, AfterViewInit {
   ngOnInit() {
     window.addEventListener('message', this.handleMessage);
 
+    // Subscribe to turn changes
     this.turnSubscription = this.chessService.currentTurn$.subscribe((turn) => {
-      console.log(`${this.playerColor} - Turno atual:`, turn);
+      console.log(`${this.playerColor} - Current turn:`, turn);
       this.isDisabled = turn !== this.playerColor;
     });
   }
@@ -36,7 +37,7 @@ export class ChessBoardComponent implements OnInit, OnDestroy, AfterViewInit {
   ngAfterViewInit() {
     setTimeout(() => {
       if (this.isBlackPerspective) {
-        console.log('Rotacionando tabuleiro para perspectiva preta');
+        console.log('Rotating board for black perspective');
         this.board.reverse();
       }
     });
@@ -55,21 +56,18 @@ export class ChessBoardComponent implements OnInit, OnDestroy, AfterViewInit {
       event.data.move?.color !== this.playerColor
     ) {
       try {
-        console.log(
-          `${this.playerColor} recebendo movimento:`,
-          event.data.move
-        );
+        console.log(`${this.playerColor} receiving move:`, event.data.move);
         const moveString = `${event.data.move.from}${event.data.move.to}`;
         this.board.move(moveString);
       } catch (error) {
-        console.error('Erro ao mover peça:', error);
+        console.error('Error moving piece:', error);
       }
     }
   };
 
   onMoveChange(event: any) {
-    // Não verifica o turno aqui, pois o [dragDisabled] já controla isso
-    console.log(`${this.playerColor} enviando movimento:`, event);
+    // No turn check here as [dragDisabled] already controls it
+    console.log(`${this.playerColor} sending move:`, event);
 
     const move: ChessMove = {
       from: event.move.substring(0, 2),
@@ -85,7 +83,7 @@ export class ChessBoardComponent implements OnInit, OnDestroy, AfterViewInit {
       '*'
     );
 
-    // Atualiza o turno após o movimento
+    // Update turn after move
     this.chessService.sendMove(move);
   }
 }
