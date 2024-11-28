@@ -5,6 +5,7 @@ import {
   OnInit,
   OnDestroy,
 } from '@angular/core';
+import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
 
 @Component({
   selector: 'app-main-page',
@@ -15,36 +16,48 @@ export class MainPageComponent implements OnInit, OnDestroy {
   @ViewChild('iframe1') iframe1!: ElementRef;
   @ViewChild('iframe2') iframe2!: ElementRef;
 
-  private messageListener: any;
+  whiteBoardUrl: SafeResourceUrl;
+  blackBoardUrl: SafeResourceUrl;
+
+  constructor(private sanitizer: DomSanitizer) {
+    this.whiteBoardUrl = this.sanitizer.bypassSecurityTrustResourceUrl(
+      '/iframepage?color=white'
+    );
+    this.blackBoardUrl = this.sanitizer.bypassSecurityTrustResourceUrl(
+      '/iframepage?color=black'
+    );
+  }
 
   ngOnInit() {
-    this.messageListener = (event: MessageEvent) => {
-      if (event.data?.type === 'CHESS_MOVE') {
-        try {
-          const targetIframe =
-            event.source === this.iframe1?.nativeElement.contentWindow
-              ? this.iframe2?.nativeElement
-              : this.iframe1?.nativeElement;
-
-          if (targetIframe?.contentWindow) {
-            targetIframe.contentWindow.postMessage(event.data, '*');
-          }
-        } catch (error) {
-          console.error('Erro na comunicação entre iframes:', error);
-        }
-      }
-    };
-
-    window.addEventListener('message', this.messageListener);
+    window.addEventListener('message', this.handleMessage);
   }
 
   ngOnDestroy() {
-    if (this.messageListener) {
-      window.removeEventListener('message', this.messageListener);
-    }
+    window.removeEventListener('message', this.handleMessage);
   }
 
-  onIframeLoad(event: Event, iframeNumber: number) {
-    console.log(`Iframe ${iframeNumber} carregado`);
-  }
+  private handleMessage = (event: MessageEvent) => {
+    if (event.data?.type === 'CHESS_MOVE') {
+      try {
+        console.log('Main page recebendo movimento:', event.data);
+
+        // Determina qual iframe deve receber o movimento
+        const targetIframe =
+          event.data.move.color === 'white'
+            ? this.iframe2.nativeElement.contentWindow
+            : this.iframe1.nativeElement.contentWindow;
+
+        // Envia o movimento para o iframe de destino
+        targetIframe.postMessage(
+          {
+            type: 'CHESS_MOVE',
+            move: event.data.move,
+          },
+          '*'
+        );
+      } catch (error) {
+        console.error('Erro ao processar movimento:', error);
+      }
+    }
+  };
 }

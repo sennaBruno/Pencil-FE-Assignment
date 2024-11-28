@@ -1,19 +1,8 @@
 <div class="main-container">
   <h1>Chess Game</h1>
   <div class="iframes-container">
-    <iframe
-      #iframe1
-      src="/iframepage?color=white"
-      class="chess-iframe"
-      (load)="onIframeLoad($event, 1)"
-    >
-    </iframe>
-    <iframe
-      #iframe2
-      src="/iframepage?color=black"
-      class="chess-iframe"
-      (load)="onIframeLoad($event, 2)"
-    >
-    </iframe>
+    <iframe #iframe1 [src]="whiteBoardUrl" class="chess-iframe"></iframe>
+    <iframe #iframe2 [src]="blackBoardUrl" class="chess-iframe"></iframe>
   </div>
 </div>
+y7

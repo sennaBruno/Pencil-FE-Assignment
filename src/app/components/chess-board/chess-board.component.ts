@@ -11,59 +11,46 @@ export class ChessBoardComponent implements OnInit, OnDestroy {
   @ViewChild('board') board!: NgxChessBoardView;
   @Input() isBlackPerspective: boolean = false;
   @Input() playerColor: 'white' | 'black' = 'white';
-
   isDisabled: boolean = false;
-  private messageListener: any;
 
   constructor(private chessService: ChessService) {}
 
   ngOnInit() {
-    this.messageListener = (event: MessageEvent) => {
-      if (
-        event.data?.type === 'CHESS_MOVE' &&
-        event.data.move?.color !== this.playerColor
-      ) {
-        try {
-          // Aplica o movimento no tabuleiro
-          this.board.move(`${event.data.move.from}${event.data.move.to}`);
-          // Atualiza o turno após receber o movimento
-          this.chessService.sendMove(event.data.move);
-        } catch (error) {
-          console.error('Erro ao mover peça:', error);
-        }
-      }
-    };
-
-    window.addEventListener('message', this.messageListener);
-
-    // Controle de turnos
-    this.chessService.currentTurn$.subscribe((turn) => {
-      this.isDisabled = turn !== this.playerColor;
-      console.log(
-        `Turno atual: ${turn}, Jogador: ${this.playerColor}, Desabilitado: ${this.isDisabled}`
-      );
-    });
+    window.addEventListener('message', this.handleMessage);
   }
 
   ngOnDestroy() {
-    window.removeEventListener('message', this.messageListener);
+    window.removeEventListener('message', this.handleMessage);
   }
 
-  onMoveChange(event: any) {
-    console.log('Movimento detectado:', event);
-
-    if (this.isDisabled) {
-      console.log('Movimento bloqueado - não é seu turno');
-      return;
+  private handleMessage = (event: MessageEvent) => {
+    if (
+      event.data?.type === 'CHESS_MOVE' &&
+      event.data.move?.color !== this.playerColor
+    ) {
+      try {
+        console.log(
+          `${this.playerColor} recebendo movimento:`,
+          event.data.move
+        );
+        const moveString = `${event.data.move.from}${event.data.move.to}`;
+        this.board.move(moveString);
+      } catch (error) {
+        console.error('Erro ao mover peça:', error);
+      }
     }
+  };
 
+  onMoveChange(event: any) {
+    console.log(`${this.playerColor} enviando movimento:`, event);
+
+    // Extrair informações corretas do evento
     const move: ChessMove = {
-      from: event.from,
-      to: event.to,
+      from: event.move.substring(0, 2),
+      to: event.move.substring(2, 4),
       color: this.playerColor,
     };
 
-    // Envia movimento para o pai
     window.parent.postMessage(
       {
         type: 'CHESS_MOVE',
@@ -71,5 +58,8 @@ export class ChessBoardComponent implements OnInit, OnDestroy {
       },
       '*'
     );
+
+    // Atualiza o turno
+    this.chessService.sendMove(move);
   }
 }
