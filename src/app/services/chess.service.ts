@@ -15,8 +15,9 @@ export class ChessService {
   currentTurn$ = this.currentTurnSubject.asObservable();
 
   sendMove(move: ChessMove) {
-    console.log('Alterando turno:', move.color === 'white' ? 'black' : 'white');
-    this.currentTurnSubject.next(move.color === 'white' ? 'black' : 'white');
+    const nextTurn = move.color === 'white' ? 'black' : 'white';
+    console.log('Alterando turno:', nextTurn);
+    this.currentTurnSubject.next(nextTurn);
   }
 
   getCurrentTurn() {
