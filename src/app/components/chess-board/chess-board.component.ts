@@ -27,7 +27,6 @@ export class ChessBoardComponent implements OnInit, OnDestroy, AfterViewInit {
   ngOnInit() {
     window.addEventListener('message', this.handleMessage);
 
-    // Inscreve-se nas mudanças de turno
     this.turnSubscription = this.chessService.currentTurn$.subscribe((turn) => {
       console.log(`${this.playerColor} - Turno atual:`, turn);
       this.isDisabled = turn !== this.playerColor;
@@ -35,7 +34,6 @@ export class ChessBoardComponent implements OnInit, OnDestroy, AfterViewInit {
   }
 
   ngAfterViewInit() {
-    // Configura a orientação inicial do tabuleiro após a view ser inicializada
     setTimeout(() => {
       if (this.isBlackPerspective) {
         console.log('Rotacionando tabuleiro para perspectiva preta');
@@ -63,9 +61,6 @@ export class ChessBoardComponent implements OnInit, OnDestroy, AfterViewInit {
         );
         const moveString = `${event.data.move.from}${event.data.move.to}`;
         this.board.move(moveString);
-
-        // Atualiza o turno após receber o movimento
-        this.chessService.sendMove(event.data.move);
       } catch (error) {
         console.error('Erro ao mover peça:', error);
       }
@@ -73,11 +68,7 @@ export class ChessBoardComponent implements OnInit, OnDestroy, AfterViewInit {
   };
 
   onMoveChange(event: any) {
-    if (this.isDisabled) {
-      console.log('Movimento bloqueado - não é seu turno');
-      return;
-    }
-
+    // Não verifica o turno aqui, pois o [dragDisabled] já controla isso
     console.log(`${this.playerColor} enviando movimento:`, event);
 
     const move: ChessMove = {
@@ -94,7 +85,7 @@ export class ChessBoardComponent implements OnInit, OnDestroy, AfterViewInit {
       '*'
     );
 
-    // Atualiza o turno após enviar o movimento
+    // Atualiza o turno após o movimento
     this.chessService.sendMove(move);
   }
 }

@@ -14,7 +14,7 @@ export class IframePageComponent implements OnInit {
 
   ngOnInit() {
     const color = this.route.snapshot.queryParams['color'];
-    this.isBlackPerspective = color === 'black';
     this.playerColor = color as 'white' | 'black';
+    this.isBlackPerspective = this.playerColor === 'black';
   }
 }
