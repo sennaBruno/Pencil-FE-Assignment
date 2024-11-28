@@ -40,7 +40,13 @@ export class MainPageComponent implements OnInit, OnDestroy, AfterViewInit {
   }
 
   ngAfterViewInit() {
-    // Não precisamos mais do setTimeout e da lógica de controle de estado aqui
+    setTimeout(() => {
+      this.turnSubscription = this.chessService.currentTurn$.subscribe(
+        (turn) => {
+          this.updateBoardStates(turn);
+        }
+      );
+    });
   }
 
   ngOnDestroy() {
@@ -48,6 +54,23 @@ export class MainPageComponent implements OnInit, OnDestroy, AfterViewInit {
     if (this.turnSubscription) {
       this.turnSubscription.unsubscribe();
     }
+  }
+
+  private updateBoardStates(currentTurn: 'white' | 'black') {
+    if (!this.iframe1?.nativeElement || !this.iframe2?.nativeElement) {
+      console.log('Iframes ainda não estão prontos');
+      return;
+    }
+
+    [this.iframe1, this.iframe2].forEach((iframe) => {
+      iframe.nativeElement.contentWindow.postMessage(
+        {
+          type: 'TURN_CHANGE',
+          currentTurn: currentTurn,
+        },
+        '*'
+      );
+    });
   }
 
   private handleMessage = (event: MessageEvent) => {
@@ -67,17 +90,8 @@ export class MainPageComponent implements OnInit, OnDestroy, AfterViewInit {
           '*'
         );
 
-        // Propaga a mudança de turno para ambos os iframes
-        [this.iframe1, this.iframe2].forEach((iframe) => {
-          iframe.nativeElement.contentWindow.postMessage(
-            {
-              type: 'TURN_CHANGE',
-              currentTurn:
-                event.data.move.color === 'white' ? 'black' : 'white',
-            },
-            '*'
-          );
-        });
+        // Atualizar o serviço com o novo movimento
+        this.chessService.sendMove(event.data.move);
       } catch (error) {
         console.error('Error processing move:', error);
       }

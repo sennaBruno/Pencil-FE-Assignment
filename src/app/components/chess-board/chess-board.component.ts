@@ -68,7 +68,13 @@ export class ChessBoardComponent implements OnInit, OnDestroy, AfterViewInit {
   }
 
   private handleMessage = (event: MessageEvent) => {
-    if (
+    if (event.data?.type === 'TURN_CHANGE') {
+      // Atualizar o estado de desabilitação baseado no turno atual
+      this.isDisabled = event.data.currentTurn !== this.playerColor;
+      console.log(
+        `Tabuleiro ${this.playerColor} - Turno: ${event.data.currentTurn}, Desabilitado: ${this.isDisabled}`
+      );
+    } else if (
       event.data?.type === 'CHESS_MOVE' &&
       event.data.move?.color !== this.playerColor
     ) {
@@ -86,8 +92,8 @@ export class ChessBoardComponent implements OnInit, OnDestroy, AfterViewInit {
   };
 
   onMoveChange(event: any) {
-    const currentTurn = this.chessService.getCurrentTurn();
-    if (currentTurn !== this.playerColor) {
+    // Verificar se é a vez do jogador antes de permitir o movimento
+    if (this.isDisabled) {
       console.log(
         `Movimento bloqueado - Não é o turno do jogador ${this.playerColor}`
       );
@@ -107,7 +113,5 @@ export class ChessBoardComponent implements OnInit, OnDestroy, AfterViewInit {
       },
       '*'
     );
-
-    this.chessService.sendMove(move);
   }
 }
