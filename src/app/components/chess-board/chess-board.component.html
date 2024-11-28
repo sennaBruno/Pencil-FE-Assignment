@@ -1,11 +1,13 @@
-<ngx-chess-board
-  #board
-  [size]="400"
-  [darkTileColor]="'#B58863'"
-  [lightTileColor]="'#F0D9B5'"
-  [dragDisabled]="isDisabled"
-  [drawDisabled]="true"
-  (moveChange)="onMoveChange($event)"
-  [boardOrientation]="playerColor"
->
-</ngx-chess-board>
+<div class="chess-board-container">
+  <div *ngIf="isDisabled" class="board-overlay"></div>
+  <ngx-chess-board
+    #board
+    [size]="400"
+    [darkTileColor]="'#B58863'"
+    [lightTileColor]="'#F0D9B5'"
+    [drawDisabled]="true"
+    (moveChange)="onMoveChange($event)"
+    [boardOrientation]="playerColor"
+  >
+  </ngx-chess-board>
+</div>

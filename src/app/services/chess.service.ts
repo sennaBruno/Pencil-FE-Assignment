@@ -23,4 +23,8 @@ export class ChessService {
   getCurrentTurn() {
     return this.currentTurnSubject.value;
   }
+
+  isPlayerTurn(playerColor: 'white' | 'black'): boolean {
+    return this.currentTurnSubject.value === playerColor;
+  }
 }
