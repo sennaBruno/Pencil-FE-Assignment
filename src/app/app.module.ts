@@ -1,4 +1,4 @@
-import { NgModule } from '@angular/core';
+import { NgModule, CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
 import { BrowserModule } from '@angular/platform-browser';
 import { AppRoutingModule } from './app-routing.module';
 import { NgxChessBoardModule } from 'ngx-chess-board';
@@ -18,5 +18,6 @@ import { ChessBoardComponent } from './components/chess-board/chess-board.compon
   imports: [BrowserModule, AppRoutingModule, NgxChessBoardModule],
   providers: [],
   bootstrap: [AppComponent],
+  schemas: [CUSTOM_ELEMENTS_SCHEMA],
 })
 export class AppModule {}

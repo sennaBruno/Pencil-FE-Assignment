@@ -12,4 +12,17 @@ export class MainPageComponent {
   onIframeLoad(event: Event, iframeNumber: number) {
     console.log(`Iframe ${iframeNumber} carregado`);
   }
+
+  ngOnInit() {
+    window.addEventListener('message', (event) => {
+      if (event.data.type === 'CHESS_MOVE') {
+        const targetIframe =
+          event.source === this.iframe1.nativeElement.contentWindow
+            ? this.iframe2.nativeElement
+            : this.iframe1.nativeElement;
+
+        targetIframe.contentWindow.postMessage(event.data, '*');
+      }
+    });
+  }
 }

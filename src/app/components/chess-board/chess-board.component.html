@@ -1,1 +1,11 @@
-<p>chess-board works!</p>
+<ngx-chess-board
+  #board
+  [darkTileColor]="'#B58863'"
+  [lightTileColor]="'#F0D9B5'"
+  [size]="400"
+  [dragDisabled]="false"
+  [drawDisabled]="true"
+  (moveChange)="onMoveChange($event)"
+  [orientation]="isBlackPerspective ? 'black' : 'white'"
+>
+</ngx-chess-board>
