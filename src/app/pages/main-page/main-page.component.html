@@ -4,5 +4,16 @@
     <iframe #iframe1 [src]="whiteBoardUrl" class="chess-iframe"></iframe>
     <iframe #iframe2 [src]="blackBoardUrl" class="chess-iframe"></iframe>
   </div>
+
+  <div *ngIf="showGameEndModal" class="modal-overlay">
+    <div class="modal-content">
+      <h2>Fim de Jogo!</h2>
+      <p>{{ winner === "white" ? "White" : "Black" }} won by checkmate!</p>
+      <button (click)="resetGame()">New Game</button>
+    </div>
+  </div>
+
+  <button class="floating-test-button" (click)="testCheckMate()">
+    Test Mode
+  </button>
 </div>
-y7

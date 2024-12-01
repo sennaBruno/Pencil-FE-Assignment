@@ -21,28 +21,16 @@ export class ChessBoardComponent implements OnInit, OnDestroy, AfterViewInit {
   @Input() playerColor: 'white' | 'black' = 'white';
   isDisabled: boolean = false;
   private turnSubscription?: Subscription;
+  private lastFEN: string = '';
 
   constructor(private chessService: ChessService) {}
 
   ngOnInit() {
     window.addEventListener('message', this.handleMessage);
-
     this.turnSubscription = this.chessService.currentTurn$.subscribe((turn) => {
       const newDisabledState = turn !== this.playerColor;
       if (this.isDisabled !== newDisabledState) {
         this.isDisabled = newDisabledState;
-        console.log(
-          `Tabuleiro ${this.playerColor} - Turno: ${turn}, Desabilitado: ${this.isDisabled}`
-        );
-
-        window.parent.postMessage(
-          {
-            type: 'TURN_CHANGE',
-            playerColor: this.playerColor,
-            isDisabled: this.isDisabled,
-          },
-          '*'
-        );
       }
     });
   }
@@ -50,11 +38,8 @@ export class ChessBoardComponent implements OnInit, OnDestroy, AfterViewInit {
   ngAfterViewInit() {
     setTimeout(() => {
       if (this.isBlackPerspective) {
-        console.log('Rotacionando tabuleiro para perspectiva preta');
         this.board.reverse();
       }
-
-      // Garante que o estado inicial de desativação está correto
       const currentTurn = this.chessService.getCurrentTurn();
       this.isDisabled = currentTurn !== this.playerColor;
     });
@@ -67,36 +52,8 @@ export class ChessBoardComponent implements OnInit, OnDestroy, AfterViewInit {
     }
   }
 
-  private handleMessage = (event: MessageEvent) => {
-    if (event.data?.type === 'TURN_CHANGE') {
-      // Atualizar o estado de desabilitação baseado no turno atual
-      this.isDisabled = event.data.currentTurn !== this.playerColor;
-      console.log(
-        `Tabuleiro ${this.playerColor} - Turno: ${event.data.currentTurn}, Desabilitado: ${this.isDisabled}`
-      );
-    } else if (
-      event.data?.type === 'CHESS_MOVE' &&
-      event.data.move?.color !== this.playerColor
-    ) {
-      try {
-        console.log(
-          `${this.playerColor} recebendo movimento:`,
-          event.data.move
-        );
-        const moveString = `${event.data.move.from}${event.data.move.to}`;
-        this.board.move(moveString);
-      } catch (error) {
-        console.error('Erro ao mover peça:', error);
-      }
-    }
-  };
-
   onMoveChange(event: any) {
-    // Verificar se é a vez do jogador antes de permitir o movimento
     if (this.isDisabled) {
-      console.log(
-        `Movimento bloqueado - Não é o turno do jogador ${this.playerColor}`
-      );
       return;
     }
 
@@ -106,6 +63,21 @@ export class ChessBoardComponent implements OnInit, OnDestroy, AfterViewInit {
       color: this.playerColor,
     };
 
+    setTimeout(() => {
+      const currentFEN = this.board.getFEN();
+      if (this.isCheckMate(currentFEN)) {
+        const winner = this.playerColor;
+        window.parent.postMessage(
+          {
+            type: 'CHECKMATE',
+            winner: winner,
+          },
+          '*'
+        );
+      }
+      this.lastFEN = currentFEN;
+    });
+
     window.parent.postMessage(
       {
         type: 'CHESS_MOVE',
@@ -113,5 +85,66 @@ export class ChessBoardComponent implements OnInit, OnDestroy, AfterViewInit {
       },
       '*'
     );
+  }
+
+  resetBoard() {
+    this.board.reset();
+  }
+
+  private handleMessage = (event: MessageEvent) => {
+    if (event.data?.type === 'TEST_CHECKMATE') {
+      this.testCheckMate();
+    } else if (event.data?.type === 'TURN_CHANGE') {
+      this.isDisabled = event.data.currentTurn !== this.playerColor;
+    } else if (
+      event.data?.type === 'CHESS_MOVE' &&
+      event.data.move?.color !== this.playerColor
+    ) {
+      try {
+        const moveString = `${event.data.move.from}${event.data.move.to}`;
+        this.board.move(moveString);
+      } catch (error) {
+        console.error('Erro ao mover peça:', error);
+      }
+    } else if (event.data?.type === 'RESET_GAME') {
+      this.resetBoard();
+    }
+  };
+
+  private isCheckMate(fen: string): boolean {
+    const moveHistory = this.board.getMoveHistory();
+    const lastMove = moveHistory[moveHistory.length - 1];
+
+    if (fen !== this.lastFEN && lastMove?.move.includes('#')) {
+      setTimeout(() => {
+        window.parent.postMessage(
+          {
+            type: 'CHECKMATE',
+            winner: this.playerColor,
+          },
+          '*'
+        );
+      }, 100);
+      return true;
+    }
+    return false;
+  }
+
+  testCheckMate() {
+    // Posição de xeque-mate conhecida como "Fool's Mate"
+    const foolsMatePosition =
+      'rnb1kbnr/pppp1ppp/8/4p3/6Pq/5P2/PPPPP2P/RNBQKBNR w KQkq - 0 3';
+    this.board.setFEN(foolsMatePosition);
+
+    // Simula a detecção de xeque-mate
+    setTimeout(() => {
+      window.parent.postMessage(
+        {
+          type: 'CHECKMATE',
+          winner: 'black',
+        },
+        '*'
+      );
+    }, 100);
   }
 }

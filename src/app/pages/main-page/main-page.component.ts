@@ -22,6 +22,8 @@ export class MainPageComponent implements OnInit, OnDestroy, AfterViewInit {
   whiteBoardUrl: SafeResourceUrl;
   blackBoardUrl: SafeResourceUrl;
   private turnSubscription?: Subscription;
+  showGameEndModal: boolean = false;
+  winner: string = '';
 
   constructor(
     private sanitizer: DomSanitizer,
@@ -56,9 +58,50 @@ export class MainPageComponent implements OnInit, OnDestroy, AfterViewInit {
     }
   }
 
+  private handleMessage = (event: MessageEvent) => {
+    if (event.data?.type === 'CHESS_MOVE') {
+      try {
+        const targetIframe =
+          event.data.move.color === 'white'
+            ? this.iframe2.nativeElement.contentWindow
+            : this.iframe1.nativeElement.contentWindow;
+
+        targetIframe.postMessage(
+          {
+            type: 'CHESS_MOVE',
+            move: event.data.move,
+          },
+          '*'
+        );
+
+        this.chessService.sendMove(event.data.move);
+      } catch (error) {
+        console.error('Error processing move:', error);
+      }
+    } else if (event.data?.type === 'CHECKMATE') {
+      this.winner = event.data.winner;
+      this.showGameEndModal = true;
+    }
+  };
+
+  resetGame() {
+    this.showGameEndModal = false;
+    this.winner = '';
+
+    [this.iframe1, this.iframe2].forEach((iframe) => {
+      iframe.nativeElement.contentWindow.postMessage(
+        {
+          type: 'RESET_GAME',
+        },
+        '*'
+      );
+    });
+
+    this.chessService.resetGame();
+  }
+
   private updateBoardStates(currentTurn: 'white' | 'black') {
     if (!this.iframe1?.nativeElement || !this.iframe2?.nativeElement) {
-      console.log('Iframes ainda não estão prontos');
       return;
     }
 
@@ -73,28 +116,14 @@ export class MainPageComponent implements OnInit, OnDestroy, AfterViewInit {
     });
   }
 
-  private handleMessage = (event: MessageEvent) => {
-    if (event.data?.type === 'CHESS_MOVE') {
-      try {
-        console.log('Main page receiving move:', event.data);
-        const targetIframe =
-          event.data.move.color === 'white'
-            ? this.iframe2.nativeElement.contentWindow
-            : this.iframe1.nativeElement.contentWindow;
-
-        targetIframe.postMessage(
-          {
-            type: 'CHESS_MOVE',
-            move: event.data.move,
-          },
-          '*'
-        );
-
-        // Atualizar o serviço com o novo movimento
-        this.chessService.sendMove(event.data.move);
-      } catch (error) {
-        console.error('Error processing move:', error);
-      }
-    }
-  };
+  testCheckMate() {
+    [this.iframe1, this.iframe2].forEach((iframe) => {
+      iframe.nativeElement.contentWindow.postMessage(
+        {
+          type: 'TEST_CHECKMATE',
+        },
+        '*'
+      );
+    });
+  }
 }

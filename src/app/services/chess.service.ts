@@ -16,7 +16,6 @@ export class ChessService {
 
   sendMove(move: ChessMove) {
     const nextTurn = move.color === 'white' ? 'black' : 'white';
-    console.log('Alterando turno:', nextTurn);
     this.currentTurnSubject.next(nextTurn);
   }
 
@@ -24,7 +23,7 @@ export class ChessService {
     return this.currentTurnSubject.value;
   }
 
-  isPlayerTurn(playerColor: 'white' | 'black'): boolean {
-    return this.currentTurnSubject.value === playerColor;
+  resetGame() {
+    this.currentTurnSubject.next('white');
   }
 }
