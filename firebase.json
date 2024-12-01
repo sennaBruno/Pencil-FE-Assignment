@@ -1,0 +1,24 @@
+{
+  "hosting": {
+    "public": "dist/pencil-chess",
+    "ignore": [
+      "firebase.json",
+      "**/.*",
+      "**/node_modules/**"
+    ],
+    "rewrites": [
+      {
+        "source": "/mainpage",
+        "destination": "/index.html"
+      },
+      {
+        "source": "/iframepage",
+        "destination": "/index.html"
+      },
+      {
+        "source": "**",
+        "destination": "/index.html"
+      }
+    ]
+  }
+}
