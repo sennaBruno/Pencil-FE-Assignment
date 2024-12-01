@@ -2,6 +2,10 @@
 
 A chess game implementation that allows two players to play against each other on the same screen. Each player has their own board perspective (white and black) and moves are synchronized between both boards.
 
+## Demo
+
+Visit the live demo: [PencilChess](https://pencil-fe-assignment-98b93.firebaseapp.com/mainpage)
+
 ## Features
 
 - Two synchronized chess boards
