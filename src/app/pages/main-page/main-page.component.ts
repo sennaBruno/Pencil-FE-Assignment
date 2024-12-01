@@ -87,6 +87,7 @@ export class MainPageComponent implements OnInit, OnDestroy, AfterViewInit {
   resetGame() {
     this.showGameEndModal = false;
     this.winner = '';
+    this.chessService.clearSavedState();
 
     [this.iframe1, this.iframe2].forEach((iframe) => {
       iframe.nativeElement.contentWindow.postMessage(

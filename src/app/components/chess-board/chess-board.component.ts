@@ -37,9 +37,25 @@ export class ChessBoardComponent implements OnInit, OnDestroy, AfterViewInit {
 
   ngAfterViewInit() {
     setTimeout(() => {
+      const savedState = this.chessService.getSavedState();
+
+      if (savedState) {
+        this.board.setFEN(savedState.fen);
+        if (savedState.lastMove) {
+          window.parent.postMessage(
+            {
+              type: 'CHESS_MOVE',
+              move: savedState.lastMove,
+            },
+            '*'
+          );
+        }
+      }
+
       if (this.isBlackPerspective) {
         this.board.reverse();
       }
+
       const currentTurn = this.chessService.getCurrentTurn();
       this.isDisabled = currentTurn !== this.playerColor;
     });
@@ -65,12 +81,14 @@ export class ChessBoardComponent implements OnInit, OnDestroy, AfterViewInit {
 
     setTimeout(() => {
       const currentFEN = this.board.getFEN();
+      this.chessService.saveGameState(currentFEN, move);
+
       if (this.isCheckMate(currentFEN)) {
-        const winner = this.playerColor;
+        this.chessService.clearSavedState();
         window.parent.postMessage(
           {
             type: 'CHECKMATE',
-            winner: winner,
+            winner: this.playerColor,
           },
           '*'
         );
@@ -89,6 +107,11 @@ export class ChessBoardComponent implements OnInit, OnDestroy, AfterViewInit {
 
   resetBoard() {
     this.board.reset();
+    if (this.isBlackPerspective) {
+      setTimeout(() => {
+        this.board.reverse();
+      });
+    }
   }
 
   private handleMessage = (event: MessageEvent) => {
@@ -131,12 +154,10 @@ export class ChessBoardComponent implements OnInit, OnDestroy, AfterViewInit {
   }
 
   testCheckMate() {
-    // Posição de xeque-mate conhecida como "Fool's Mate"
     const foolsMatePosition =
       'rnb1kbnr/pppp1ppp/8/4p3/6Pq/5P2/PPPPP2P/RNBQKBNR w KQkq - 0 3';
     this.board.setFEN(foolsMatePosition);
 
-    // Simula a detecção de xeque-mate
     setTimeout(() => {
       window.parent.postMessage(
         {
